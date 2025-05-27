@@ -1,11 +1,11 @@
 server:
   port: 9010
   servlet:
-    context-path: /api/v1
+    context-path: /inventory
 
 spring:
   application:
-    name: inventory_service
+    name: inventory-service
 
   datasource:
     url: jdbc:postgresql://localhost:5432/inventory_DB
@@ -32,4 +32,4 @@ spring:
 eureka:
   client:
     service-url:
-      defaultZone: "http://localhost:8761/eureka/"
+      defaultZone: http://localhost:8761/eureka/

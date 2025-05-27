@@ -2,6 +2,7 @@ package com.sushantproject.ecommerce_mini_microservices.inventory_service.contro
 
 import com.sushantproject.ecommerce_mini_microservices.inventory_service.dto.ProductDto;
 import com.sushantproject.ecommerce_mini_microservices.inventory_service.service.ProductService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +18,7 @@ import org.springframework.web.client.RestClient;
 import java.util.List;
 
 @RestController
-@RequestMapping(path = "/product")
+@RequestMapping(path = "/products")
 @RequiredArgsConstructor
 @Slf4j
 public class ProductController {
@@ -27,10 +28,12 @@ public class ProductController {
     private final RestClient restClient;
 
     @GetMapping("/fetchOrders")
-    public String fetchFromOrderService() {
-        ServiceInstance orderService = discoveryClient.getInstances("order_service").getFirst();
+    public String fetchFromOrderService(HttpServletRequest httpServletRequest) {
+
+        log.info(httpServletRequest.getHeader("x-custom-header"));
+        ServiceInstance orderService = discoveryClient.getInstances("order-service").getFirst();
         return restClient.get()
-                .uri(orderService.getUri() + "/api/v1/orders/helloOrders")
+                .uri(orderService.getUri() + "/orders/core/helloOrders")
                 .retrieve()
                 .body(String.class);
     }

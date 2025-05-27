@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping(path = "/orders")
+@RequestMapping(path = "/core")
 @Slf4j
 @RequiredArgsConstructor
 public class OrderController {
@@ -22,7 +22,7 @@ public class OrderController {
 
     @GetMapping("/helloOrders")
     public String helloOrders() {
-        return "Hello from Others Service";
+        return "Hello from Order Service";
     }
 
     @GetMapping
