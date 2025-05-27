@@ -1,0 +1,17 @@
+-- Insert sample orders
+INSERT INTO orders (order_status, total_price) VALUES
+('CONFIRMED', 99.98),
+('PROCESSING', 149.95),
+('PENDING', 29.99),
+('SHIPPED', 199.99),
+('DELIVERED', 59.50);
+
+-- Insert sample order items
+INSERT INTO order_item (product_id, quantity, order_id) VALUES
+(101, 2, 1),
+(205, 1, 1),
+(178, 3, 2),
+(342, 1, 3),
+(156, 2, 3),
+(290, 1, 4),
+(411, 5, 5);
