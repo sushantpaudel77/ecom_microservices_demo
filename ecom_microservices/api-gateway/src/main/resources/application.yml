@@ -11,7 +11,6 @@ spring:
             - Path=/api/v1/orders/**
           filters:
             - StripPrefix=2
-            - RedirectTo=302, http://codingshuttle.com
 
         - id: inventory-service
           uri: lb://INVENTORY-SERVICE
@@ -20,7 +19,6 @@ spring:
           filters:
             - StripPrefix=2
             - AddRequestHeader=x-Custom-Header, Sush
-
 eureka:
   client:
     service-url:

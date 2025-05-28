@@ -1,8 +1,13 @@
 package com.sushantproject.ecommerce_mini_microservices.order_service.service;
 
+import com.fasterxml.jackson.core.PrettyPrinter;
+import com.sushantproject.ecommerce_mini_microservices.order_service.clients.InventoryOpenFeignClient;
 import com.sushantproject.ecommerce_mini_microservices.order_service.dto.OrderRequestDto;
+import com.sushantproject.ecommerce_mini_microservices.order_service.entity.OrderItem;
+import com.sushantproject.ecommerce_mini_microservices.order_service.entity.OrderStatus;
 import com.sushantproject.ecommerce_mini_microservices.order_service.entity.Orders;
 import com.sushantproject.ecommerce_mini_microservices.order_service.repository.OrdersRepository;
+import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -18,6 +23,7 @@ public class OrdersService {
 
     private final OrdersRepository ordersRepository;
     private final ModelMapper modelMapper;
+    private final InventoryOpenFeignClient inventoryOpenFeignClient;
 
     public List<OrderRequestDto> getAllOrders() {
         log.info("Fetching all orders");
@@ -41,5 +47,28 @@ public class OrdersService {
             log.warn("Order not found with ID: {}", ordersId);
             return new RuntimeException("Order not found with the ID: " + ordersId);
         });
+    }
+
+    @Retry(name = "inventoryRetry", fallbackMethod = "createOrderFallback")
+    public OrderRequestDto createOrder(OrderRequestDto orderRequestDto) {
+        Double totalPrice = inventoryOpenFeignClient.reduceStocks(orderRequestDto);
+
+        Orders orders = modelMapper.map(orderRequestDto, Orders.class);
+
+        for (OrderItem orderItem : orders.getItems()) {
+            orderItem.setOrders(orders);
+        }
+
+        orders.setTotalPrice(totalPrice);
+        orders.setOrderStatus(OrderStatus.CONFIRMED);
+
+        Orders savedOrder = ordersRepository.save(orders);
+
+        return modelMapper.map(savedOrder, OrderRequestDto.class);
+    }
+
+    public OrderRequestDto createOrderFallback(OrderRequestDto orderRequestDto, Throwable throwable) {
+        log.error("Fallback triggered for createOrder due to: {}", throwable.getMessage());
+        return new OrderRequestDto();
     }
 }
