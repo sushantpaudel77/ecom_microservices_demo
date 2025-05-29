@@ -1,13 +1,12 @@
 package com.sushantproject.ecommerce_mini_microservices.order_service.service;
 
-import com.fasterxml.jackson.core.PrettyPrinter;
 import com.sushantproject.ecommerce_mini_microservices.order_service.clients.InventoryOpenFeignClient;
 import com.sushantproject.ecommerce_mini_microservices.order_service.dto.OrderRequestDto;
 import com.sushantproject.ecommerce_mini_microservices.order_service.entity.OrderItem;
 import com.sushantproject.ecommerce_mini_microservices.order_service.entity.OrderStatus;
 import com.sushantproject.ecommerce_mini_microservices.order_service.entity.Orders;
 import com.sushantproject.ecommerce_mini_microservices.order_service.repository.OrdersRepository;
-import io.github.resilience4j.retry.annotation.Retry;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -49,8 +48,11 @@ public class OrdersService {
         });
     }
 
-    @Retry(name = "inventoryRetry", fallbackMethod = "createOrderFallback")
+//    @Retry(name = "inventoryRetry", fallbackMethod = "createOrderFallback")
+    @CircuitBreaker(name = "inventoryCircuitBreaker", fallbackMethod = "createOrderFallback")
+//    @RateLimiter(name = "inventoryRateLimiter", fallbackMethod = "createOrderFallback")
     public OrderRequestDto createOrder(OrderRequestDto orderRequestDto) {
+        log.info("Calling the createOrder method");
         Double totalPrice = inventoryOpenFeignClient.reduceStocks(orderRequestDto);
 
         Orders orders = modelMapper.map(orderRequestDto, Orders.class);
